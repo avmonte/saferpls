@@ -50,7 +50,6 @@ def key_schedule(key):
 		# One more operation remains to be added (Bias)
 
 
-
 def encrypt():
 	pass
 
