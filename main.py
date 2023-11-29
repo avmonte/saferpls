@@ -3,7 +3,7 @@ from copy import deepcopy
 import sys
 
 # Bias Matrix (B1 is set to zero, as it is not used)
-b_box = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+b_box = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # OPTIMIZE
 				[70, 151, 177, 186, 163, 183, 16, 10, 197, 55, 179, 201, 90, 40, 172, 100],
 				[236, 171, 170, 198, 103, 149, 88, 13, 248, 154, 246, 110, 102, 220, 5, 61],
 				[138, 195, 216, 137, 106, 233, 54, 73, 67, 191, 235, 212, 150, 155, 104, 160],
@@ -38,6 +38,10 @@ b_box = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 				[62, 220, 134, 119, 215, 166, 17, 251, 244, 186, 146, 145, 100, 131, 241, 51]])
 
 
+armenian_pattern = (9, 12, 13, 16, 3, 2, 7, 6, 11, 10, 15, 14, 1, 8, 5, 4)
+
+BLOCK_SIZE = 16
+
 # python3 main.py [-e | -d] [file.txt] "[key]"
 mode = sys.argv[1]
 original_file = sys.argv[2]
@@ -45,34 +49,35 @@ original_key = sys.argv[3]
 
 key = [int(i, 16) for i in original_key.split()]
 key_length = len(key)
+r = key_length // 2  # number of rounds
 
 
-def read_file(file):
+def read_split(file):
 	# reading in binary
 	with open(file, "rb") as f:
 		content = f.read()
-		print(content)
 		no_bytes = len(content)
+		# Padding ?
 
 		return [content[i:i + 16] for i in range(0, no_bytes, 16)]  # OPTIMIZE
 
 
-def key_schedule():
+def generate_key_schedule():
 	# General case
 	# lambda x, k: ((x << k) & 0xFF) | (x >> 8 - k)
 
 	# Specific case
 	bit_rotation = lambda x: ((x << 3) & 0xFF) | (x >> 5)
 
-	schedule = [original_key]  # list of subkeys from 1 to key length + 1 inclusive
+	schedule = [key]  # list of subkeys from 1 to key length + 1 inclusive
 	# (each subkey is a string of the length of the key)
 
 	# create extra byte
-	extra_byte = original_key[0]
-	for i in original_key[1:]:
+	extra_byte = key[0]
+	for i in key[1:]:
 		extra_byte ^= i
 
-	key_register = list(deepcopy(original_key)) + [extra_byte]  # load extra byte
+	key_register = list(deepcopy(key)) + [extra_byte]  # load extra byte
 
 	for i in range(key_length):
 		key_register = [bit_rotation(j) for j in key_register]
@@ -83,8 +88,56 @@ def key_schedule():
 	return np.array(schedule)
 
 
+def correspond(input_register, subkey, operator_seq):
+	out = []
+	for i, k, o in zip(input_register, subkey, operator_seq):
+		match o:
+			case '^':  # xor
+				out.append(i ^ k)
+			case '+':  # add
+				out.append((i + k) % 256)
+			case '-':  # sub
+				out.append((i - k) % 256)
+			case 'e':  # exp
+				out.append((45 ** i) % 257 if i != 0 else 0)
+			case 'l':  # log
+				out.append(int(np.log(i) / np.log(45)) % 257 if i != 0 else 128)
+
+	return out
+
+
 def encrypt():
-	pass
+	key_schedule = generate_key_schedule()
+
+	output = []
+
+	for block in blocks:
+		current = deepcopy(block)
+
+		for i in range(r):  # rounds
+
+			current = correspond(current, key_schedule[2*i-2], '^++^' * 4)  # step 1/4
+			current = correspond(current, [1] * BLOCK_SIZE, 'elle' * 4)  # step 2/4
+			current = correspond(current, key_schedule[2*i-1], '+^^+' * 4)  # step 3/4
+
+			# step 4/4 below
+			for k in range(3):
+				# 2-PHT
+				for j in range(0, BLOCK_SIZE, 2):
+					current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
+
+				# Armenian shuffle
+				current = [current[armenian_pattern.index(i+1)] for i in range(BLOCK_SIZE)]
+
+			# 2-PHT
+			for j in range(0, BLOCK_SIZE, 2):
+				current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
+
+		current = correspond(current, key_schedule[2 * r], '^++^' * 4)  # (2r+1)-1
+
+		output.append(current)
+
+	return output
 
 
 def decrypt():
@@ -93,15 +146,15 @@ def decrypt():
 
 def main():
 	global blocks
-	blocks = read_file(original_file)
+	blocks = [[179, 166, 219, 60, 135, 12, 62, 153, 36, 94, 13, 28, 6, 183, 71, 222]]  # read_split(original_file)
 
 	if key_length not in (16, 24, 32):
 		return 'Invalid key'
 
 	if mode == '-e':
-		encrypt()
+		return encrypt()
 	elif mode == '-d':
-		decrypt()
+		return decrypt()
 	else:
 		return 'Invalid mode'
 
