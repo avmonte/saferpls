@@ -10,9 +10,16 @@ mode = sys.argv[1]
 original_file = sys.argv[2]
 original_key = sys.argv[3]
 
+blocks = [[179, 166, 219, 60, 135, 12, 62, 153, 36, 94, 13, 28, 6, 183, 71, 222]]  # read_split(original_file)
+
 key = [int(i, 16) for i in original_key.split()]
 key_length = len(key)
 r = key_length // 2  # number of rounds
+
+
+def check_format():
+	# TODO
+	pass
 
 
 def read_split(file):
@@ -26,12 +33,6 @@ def read_split(file):
 
 
 def generate_key_schedule():
-	# General case
-	# lambda x, k: ((x << k) & 0xFF) | (x >> 8 - k)
-
-	# Specific case
-	bit_rotation = lambda x: ((x << 3) & 0xFF) | (x >> 5)
-
 	schedule = [key]  # list of subkeys from 1 to key length + 1 inclusive
 	# (each subkey is a string of the length of the key)
 
@@ -43,7 +44,7 @@ def generate_key_schedule():
 	key_register = list(deepcopy(key)) + [extra_byte]  # load extra byte
 
 	for i in range(key_length):
-		key_register = [bit_rotation(j) for j in key_register]
+		key_register = [bit_rotate(j, 3) for j in key_register]
 		select = (key_register[i+1:] + key_register[:i])[:16]
 		subkey = (np.array(select) + np.array(B_BOX[i + 1])) % 256
 		schedule.append(subkey)
@@ -94,9 +95,6 @@ def decrypt():
 
 
 def main():
-	global blocks
-	blocks = [[179, 166, 219, 60, 135, 12, 62, 153, 36, 94, 13, 28, 6, 183, 71, 222]]  # read_split(original_file)
-
 	if key_length not in (16, 24, 32):
 		return 'Invalid key'
 

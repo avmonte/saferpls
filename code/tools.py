@@ -1,5 +1,9 @@
 # Helper functions defined to structure the main source
 
+def bit_rotate(x, k):
+	return ((x << k) & 0xFF) | (x >> 8 - k)
+
+
 def discrete_log(x):
 	for j in range(257):
 		check = pow(45, j + 1, 257)
