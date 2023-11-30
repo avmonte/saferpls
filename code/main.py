@@ -27,7 +27,8 @@ def read_split(file):
 	with open(file, "rb") as f:
 		content = f.read()
 		no_bytes = len(content)
-		# Padding ?
+
+		# TODO: Padding
 
 		return [content[i:i + 16] for i in range(0, no_bytes, 16)]  # OPTIMIZE
 
@@ -63,29 +64,27 @@ def encrypt():
 		# Encryption: Rounds
 		for i in range(r):
 
-			current = correspond(current, key_schedule[2*i-2], '^++^' * 4)  # step 1/4
+			current = correspond(current, key_schedule[2*i], '^++^' * 4)  # step 1/4
 			current = correspond(current, [1] * BLOCK_SIZE, 'elle' * 4)  # step 2/4
-			current = correspond(current, key_schedule[2*i-1], '+^^+' * 4)  # step 3/4
+			current = correspond(current, key_schedule[2*i+1], '+^^+' * 4)  # step 3/4
 
 			# step 4/4 below
 			for k in range(3):
 				# 2-PHT
 				for j in range(0, BLOCK_SIZE, 2):
-					current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
+					current[j], current[j + 1] = (2 * current[j] + current[j + 1]) % 256, (current[j] + current[j + 1]) % 256
 
 				# Armenian shuffle
-				current_tmp = [current[ARMENIAN_PATTERN.index(i + 1)] for i in range(BLOCK_SIZE)]
-				current = deepcopy(current_tmp)
+				current = [current[ARMENIAN_PATTERN[i] - 1] for i in range(BLOCK_SIZE)]
 
 			# 2-PHT
 			for j in range(0, BLOCK_SIZE, 2):
 				current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
 
 		# Encryption: Last Step
-		current = correspond(current, key_schedule[2*r], '^++^' * 4)  # (2r+1)-1
+		current = correspond(current, key_schedule[2*r], '^++^' * 4)
 
 		output.append(current)  # Save manipulated block copy
-
 	return output
 
 

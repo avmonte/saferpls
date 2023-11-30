@@ -11,7 +11,7 @@ def discrete_log(x):
 			return j
 
 
-def correspond(input_register, subkey, operator_seq):
+def correspond(input_register, subkey, operator_seq):  # TEST
 	out = []
 	for i, k, o in zip(input_register, subkey, operator_seq):
 		match o:
