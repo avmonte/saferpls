@@ -53,6 +53,27 @@ def generate_key_schedule():
 	return np.array(schedule)
 
 
+def step_four_arm(c):
+	current = deepcopy(c)
+	for k in range(3):
+		# 2-PHT
+		for j in range(0, BLOCK_SIZE, 2):
+			current[j], current[j + 1] = (2 * current[j] + current[j + 1]) % 256, (current[j] + current[j + 1]) % 256
+
+		# Armenian shuffle
+		current = [current[ARMENIAN_PATTERN[i] - 1] for i in range(BLOCK_SIZE)]
+
+	# 2-PHT
+	for j in range(0, BLOCK_SIZE, 2):
+		current[j], current[j + 1] = (2 * current[j] + current[j + 1]) % 256, (current[j] + current[j + 1]) % 256
+
+	return current
+
+
+def step_four_matrix(c):
+	return ((np.array(c) @ np.array(M)) % 256).tolist()
+
+
 def encrypt():
 	key_schedule = generate_key_schedule()
 
@@ -69,17 +90,7 @@ def encrypt():
 			current = correspond(current, key_schedule[2*i+1], '+^^+' * 4)  # step 3/4
 
 			# step 4/4 below
-			for k in range(3):
-				# 2-PHT
-				for j in range(0, BLOCK_SIZE, 2):
-					current[j], current[j + 1] = (2 * current[j] + current[j + 1]) % 256, (current[j] + current[j + 1]) % 256
-
-				# Armenian shuffle
-				current = [current[ARMENIAN_PATTERN[i] - 1] for i in range(BLOCK_SIZE)]
-
-			# 2-PHT
-			for j in range(0, BLOCK_SIZE, 2):
-				current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
+			current = step_four_arm(current)  # step_four_matrix(current)
 
 		# Encryption: Last Step
 		current = correspond(current, key_schedule[2*r], '^++^' * 4)
