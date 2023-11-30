@@ -5,17 +5,6 @@ import sys
 from constants import *
 from tools import *
 
-# python3 main.py [-e | -d] [file.txt] "[key]"
-mode = sys.argv[1]
-original_file = sys.argv[2]
-original_key = sys.argv[3]
-
-blocks = [[127, 112, 240, 167, 84, 134, 50, 149, 170, 91, 104, 19, 11, 230, 252, 245]]  # read_split(original_file)
-
-key = [int(i, 16) for i in original_key.split()]
-key_length = len(key)
-r = key_length // 2  # number of rounds
-
 
 def check_format():
 	# TODO
@@ -119,5 +108,14 @@ def main():
 		return 'Invalid mode'
 
 
-print(main(), "\n")
+# python3 main.py [-e | -d] [file.txt] "[key]"
+mode = sys.argv[1]
+original_file = sys.argv[2]
+original_key = sys.argv[3]
 
+blocks = read_split(original_file)
+key = [int(i, 16) for i in original_key.split()]
+key_length = len(key)
+r = key_length // 2  # number of rounds
+
+print(main(), "\n")
