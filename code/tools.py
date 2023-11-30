@@ -8,11 +8,10 @@ def discrete_log(x):
 	for j in range(257):
 		check = pow(45, j + 1, 257)
 		if check == x:
-			print(f"log {x} = j (mod 257)")
-			return j
+			return j+1
 
 
-def correspond(input_register, subkey, operator_seq):  # TEST
+def correspond(input_register, subkey, operator_seq):
 	out = []
 	for i, k, o in zip(input_register, subkey, operator_seq):
 		match o:
@@ -23,7 +22,7 @@ def correspond(input_register, subkey, operator_seq):  # TEST
 			case '-':  # sub
 				out.append((i - k) % 256)
 			case 'e':  # exp
-				out.append((45 ** i) % 257 if i != 128 else 0)
+				out.append(pow(45, int(i), 257) if i != 128 else 0)  # WOW
 			case 'l':  # log
 				out.append(discrete_log(i) if i != 0 else 128)
 

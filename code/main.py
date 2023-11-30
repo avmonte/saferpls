@@ -10,7 +10,7 @@ mode = sys.argv[1]
 original_file = sys.argv[2]
 original_key = sys.argv[3]
 
-blocks = [[179, 166, 219, 60, 135, 12, 62, 153, 36, 94, 13, 28, 6, 183, 71, 222]]  # read_split(original_file)
+blocks = [[127, 112, 240, 167, 84, 134, 50, 149, 170, 91, 104, 19, 11, 230, 252, 245]]  # read_split(original_file)
 
 key = [int(i, 16) for i in original_key.split()]
 key_length = len(key)
@@ -34,7 +34,7 @@ def read_split(file):
 
 
 def generate_key_schedule():
-	schedule = [key]  # list of subkeys from 1 to key length + 1 inclusive
+	schedule = [key[:16]]  # list of subkeys from 1 to key length + 1 inclusive
 	# (each subkey is a string of the length of the key)
 
 	# create extra byte
@@ -109,15 +109,15 @@ def main():
 		return 'Invalid key'
 
 	if mode == '-e':
-		print(f"\n\nKEY -----------> {key}\n")
-		print(f"PLAIN -----------> {blocks}\n")
-		print(f"CIPHER -----------> ", end='')
-		return encrypt()
+		print(f"\nKEY ---------> {np.array(key)}")
+		print(f"PLAIN -------> {np.array(blocks)}")
+		print(f"CIPHER ------> ", end='')
+		return np.array(encrypt())
 	elif mode == '-d':
 		return decrypt()
 	else:
 		return 'Invalid mode'
 
 
-print(main())
-print("\n")
+print(main(), "\n")
+
