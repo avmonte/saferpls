@@ -63,34 +63,67 @@ def step_four_matrix(c):
 	return ((np.array(c) @ np.array(M)) % 256).tolist()
 
 
+def reverse_step_four_arm(c):
+	current = deepcopy(c)
+	for k in range(3):
+		# 2-PHT
+		for j in range(0, BLOCK_SIZE, 2):
+			current[j], current[j + 1] = (current[j] - current[j + 1]) % 256, (2 * current[j + 1] - current[j]) % 256
+
+		# Armenian shuffle
+		current = [current[ARMENIAN_PATTERN.index(i+1)] for i in range(BLOCK_SIZE)]
+
+	# 2-PHT
+	for j in range(0, BLOCK_SIZE, 2):
+		current[j], current[j + 1] = (current[j] - current[j + 1]) % 256, (2 * current[j + 1] - current[j]) % 256
+
+	return current
+
+
 def encrypt():
 	key_schedule = generate_key_schedule()
 
-	output = []
+	cipher = []
 
 	for block in blocks:
 		current = deepcopy(block)  # create a block copy
 
 		# Encryption: Rounds
 		for i in range(r):
-
 			current = correspond(current, key_schedule[2*i], '^++^' * 4)  # step 1/4
 			current = correspond(current, [1] * BLOCK_SIZE, 'elle' * 4)  # step 2/4
 			current = correspond(current, key_schedule[2*i+1], '+^^+' * 4)  # step 3/4
-
-			# step 4/4 below
 			current = step_four_arm(current)  # step_four_matrix(current)
 
 		# Encryption: Last Step
 		current = correspond(current, key_schedule[2*r], '^++^' * 4)
 
-		output.append(current)  # Save manipulated block copy
-	return output
+		cipher.append(current)  # Save manipulated block copy
+
+	return cipher
 
 
 def decrypt():
-	# TODO
-	pass
+	key_schedule = generate_key_schedule()
+
+	plain = []
+
+	for block in blocks:
+		current = deepcopy(block)  # create a block copy
+
+		# Encryption: Last Step
+		current = correspond(current, key_schedule[2 * r], '^--^' * 4)
+
+		# Encryption: Rounds
+		for i in range(r-1, -1, -1):
+			current = reverse_step_four_arm(current)
+			current = correspond(current, key_schedule[2 * i + 1], '-^^-' * 4)
+			current = correspond(current, [1] * BLOCK_SIZE, 'leel' * 4)
+			current = correspond(current, key_schedule[2 * i], '^--^' * 4)
+
+		plain.append(current)  # Save manipulated block copy
+
+	return plain
 
 
 def main():
