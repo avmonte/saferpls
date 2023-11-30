@@ -8,6 +8,7 @@ def discrete_log(x):
 	for j in range(257):
 		check = pow(45, j + 1, 257)
 		if check == x:
+			print(f"log {x} = j (mod 257)")
 			return j
 
 
