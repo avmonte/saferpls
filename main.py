@@ -88,6 +88,13 @@ def generate_key_schedule():
 	return np.array(schedule)
 
 
+def discrete_log(x):
+	for j in range(257):
+		check = pow(45, j + 1, 257)
+		if check == x:
+			return j
+
+
 def correspond(input_register, subkey, operator_seq):
 	out = []
 	for i, k, o in zip(input_register, subkey, operator_seq):
@@ -99,9 +106,9 @@ def correspond(input_register, subkey, operator_seq):
 			case '-':  # sub
 				out.append((i - k) % 256)
 			case 'e':  # exp
-				out.append((45 ** i) % 257 if i != 0 else 0)
+				out.append((45 ** i) % 257 if i != 128 else 0)
 			case 'l':  # log
-				out.append(int(np.log(i) / np.log(45)) % 257 if i != 0 else 128)
+				out.append(discrete_log(i) if i != 0 else 128)
 
 	return out
 
@@ -112,9 +119,10 @@ def encrypt():
 	output = []
 
 	for block in blocks:
-		current = deepcopy(block)
+		current = deepcopy(block)  # create a block copy
 
-		for i in range(r):  # rounds
+		# Encryption: Rounds
+		for i in range(r):
 
 			current = correspond(current, key_schedule[2*i-2], '^++^' * 4)  # step 1/4
 			current = correspond(current, [1] * BLOCK_SIZE, 'elle' * 4)  # step 2/4
@@ -127,15 +135,17 @@ def encrypt():
 					current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
 
 				# Armenian shuffle
-				current = [current[armenian_pattern.index(i+1)] for i in range(BLOCK_SIZE)]
+				current_tmp = [current[armenian_pattern.index(i+1)] for i in range(BLOCK_SIZE)]
+				current = deepcopy(current_tmp)
 
 			# 2-PHT
 			for j in range(0, BLOCK_SIZE, 2):
 				current[j], current[j+1] = (2 * current[j] + current[j+1]) % 256, (current[j] + current[j+1]) % 256
 
-		current = correspond(current, key_schedule[2 * r], '^++^' * 4)  # (2r+1)-1
+		# Encryption: Last Step
+		current = correspond(current, key_schedule[2*r], '^++^' * 4)  # (2r+1)-1
 
-		output.append(current)
+		output.append(current)  # Save manipulated block copy
 
 	return output
 
@@ -152,6 +162,9 @@ def main():
 		return 'Invalid key'
 
 	if mode == '-e':
+		print(f"\n\nKEY -----------> {key}\n")
+		print(f"PLAIN -----------> {blocks}\n")
+		print(f"CIPHER -----------> ", end='')
 		return encrypt()
 	elif mode == '-d':
 		return decrypt()
@@ -160,3 +173,4 @@ def main():
 
 
 print(main())
+print("\n")
