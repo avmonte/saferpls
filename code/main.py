@@ -129,9 +129,10 @@ def decrypt():
 	return plain
 
 
-def remove_padding(decrypted):
-	# TODO
-	pass
+def remove_padding(decrypted):  # TEST
+	for i in range(15, -1, -1):
+		if decrypted[i] != padding[i]:
+			return decrypted[:-1] + decrypted[-1][:i+1]
 
 
 def main():
