@@ -17,7 +17,10 @@ def read_split(file):
 		content = f.read()
 		no_bytes = len(content)
 
-		# TODO: Padding
+		# Padding
+		off = no_bytes % 16
+		if off != 0:
+			content += (padding[:16 - off]).encode()
 
 		return [content[i:i + 16] for i in range(0, no_bytes, 16)]  # OPTIMIZE
 
@@ -126,16 +129,23 @@ def decrypt():
 	return plain
 
 
+def remove_padding(decrypted):
+	# TODO
+	pass
+
+
 def main():
 	if key_length not in (16, 24, 32):
 		return 'Invalid key'
 
+	print(f"\nKEY ---------> {np.array(key)}")
 	if mode == '-e':
-		print(f"\nKEY ---------> {np.array(key)}")
 		print(f"PLAIN -------> {np.array(blocks)}")
 		print(f"CIPHER ------> ", end='')
 		return np.array(encrypt())
 	elif mode == '-d':
+		print(f"CIPHER -------> {np.array(blocks)}")
+		print(f"PLAIN ------> ", end='')
 		return decrypt()
 	else:
 		return 'Invalid mode'
@@ -151,4 +161,4 @@ key = [int(i, 16) for i in original_key.split()]
 key_length = len(key)
 r = key_length // 2  # number of rounds
 
-print(main(), "\n")
+print(main(), '\n')
