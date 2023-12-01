@@ -5,6 +5,8 @@ Author: Gevorg Nersesian, gevorg_nersesian@edu.aua.am
 
 Supervisor: Sergey Abrahamyan, sabrahamyan@aua.am
 
+{Still under development}
+
 ## Usage
 
 ```bash
@@ -14,3 +16,4 @@ Supervisor: Sergey Abrahamyan, sabrahamyan@aua.am
 `-e` for `-d` for encrypt and decrypt respectively
 
 `key` in byte-spaced hex  
+
