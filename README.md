@@ -15,5 +15,4 @@ Supervisor: Sergey Abrahamyan, sabrahamyan@aua.am
 
 `-e` for `-d` for encrypt and decrypt respectively
 
-`key` in byte-spaced hex  
-
+`key` in wither hex or text
