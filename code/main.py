@@ -1,8 +1,8 @@
 import numpy as np
 from copy import deepcopy
+from time import time
 import sys
 
-from constants import *
 from tools import *
 
 
@@ -133,6 +133,7 @@ def remove_padding(decrypted):  # TEST
 	for i in range(15, -1, -1):
 		if decrypted[i] != padding[i]:
 			return decrypted[:-1] + decrypted[-1][:i+1]
+			# TODO: slides padding
 
 
 def main():
@@ -152,6 +153,7 @@ def main():
 		return 'Invalid mode'
 
 
+start = time()
 # python3 main.py [-e | -d] [file.txt] "[key]"
 mode = sys.argv[1]
 original_file = sys.argv[2]
@@ -163,3 +165,4 @@ key_length = len(key)
 r = key_length // 2  # number of rounds
 
 print(main(), '\n')
+print(f"RUNTIME: {time() - start}")

@@ -1,4 +1,5 @@
 # Helper functions defined to structure the main source
+from constants import *
 
 def bit_rotate(x, k):
 	return ((x << k) & 0xFF) | (x >> 8 - k)
@@ -6,9 +7,9 @@ def bit_rotate(x, k):
 
 def discrete_log(x):
 	for j in range(257):
-		check = pow(45, j + 1, 257)
+		check = pow(45, j, 257)
 		if check == x:
-			return j+1
+			return j
 
 
 def correspond(input_register, subkey, operator_seq):
@@ -22,8 +23,8 @@ def correspond(input_register, subkey, operator_seq):
 			case '-':  # sub
 				out.append((i - k) % 256)
 			case 'e':  # exp
-				out.append(pow(45, int(i), 257) if i != 128 else 0)  # WOW
+				out.append(exp_f[i])  # WOW
 			case 'l':  # log
-				out.append(discrete_log(i) if i != 0 else 128)
+				out.append(log_f[i])
 
 	return out
