@@ -10,9 +10,9 @@ Supervisor: Sergey Abrahamyan, sabrahamyan@aua.am
 ## Usage
 
 ```bash
- python3 main.py [-e | -d] [filepath] "[key]"
+ python3 main.py [-e | -d] [filepath] [key]
 ```
 
 `-e` for `-d` for encrypt and decrypt respectively
 
-`key` in wither hex or text
+`key` in wither hex or text (no spaces)
