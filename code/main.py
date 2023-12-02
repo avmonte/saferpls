@@ -20,7 +20,7 @@ def read_split(file):
 		# Padding
 		off = no_bytes % 16
 		if off != 0:
-			content += (padding[:16 - off]).encode()
+			content += (padding[off-1:]).encode()
 
 		return [content[i:i + 16] for i in range(0, no_bytes, 16)]  # OPTIMIZE
 
@@ -133,7 +133,6 @@ def remove_padding(decrypted):  # TEST
 	for i in range(15, -1, -1):
 		if decrypted[i] != padding[i]:
 			return decrypted[:-1] + decrypted[-1][:i+1]
-			# TODO: slides padding
 
 
 def main():
@@ -165,4 +164,4 @@ key_length = len(key)
 r = key_length // 2  # number of rounds
 
 print(main(), '\n')
-print(f"RUNTIME: {time() - start}")
+print(f"RUNTIME ----> {time() - start}")
