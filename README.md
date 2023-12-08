@@ -16,3 +16,5 @@ Supervisor: Sergey Abrahamyan, sabrahamyan@aua.am
 `-e` for `-d` for encrypt and decrypt respectively
 
 `key` in wither hex or text (no spaces)
+
+Works with `.txt` (default), `.png`
