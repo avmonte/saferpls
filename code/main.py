@@ -63,7 +63,8 @@ def remove_padding(decrypted):
 def main():
 	validation = validate_format()
 	if type(validation) == str:
-		return validation
+		print(validation)
+		return
 	else:
 		blocks, key, key_length, mode = validation
 
@@ -71,13 +72,18 @@ def main():
 
 	if mode == '-e':
 		cipher = encrypt(blocks, key_schedule, key_length)
-		save(cipher, "enc_" + filename.split('.')[0] + ".enc")
+		save(cipher, filename.split('.')[0] + ".enc")
 	else:
 		plain = remove_padding(decrypt(blocks, key_schedule, key_length))
-		save(plain, "dec_" + filename.split('.')[0] + ".txt")
+
+		tmp = ''.join([str(bytes(i)) for i in plain])
+		ext = '.txt'
+		if 'PNG' in tmp[:10]:  # PNG
+			ext = '.png'
+
+		save(plain, "dec_" + filename.split('.')[0] + ext)
 
 
 start = time()
-
-main()
+print(main())
 print(f"RUNTIME ---> {time() - start}")
