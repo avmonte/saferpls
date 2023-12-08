@@ -1,6 +1,7 @@
 # Helper functions defined to structure the main source
 from constants import *
 
+
 def bit_rotate(x, k):
 	return ((x << k) & 0xFF) | (x >> 8 - k)
 
