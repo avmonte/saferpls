@@ -5,8 +5,6 @@ Author: Gevorg Nersesian, gevorg_nersesian@edu.aua.am
 
 Supervisor: Sergey Abrahamyan, sabrahamyan@aua.am
 
-{Still under development}
-
 ## Usage
 
 ```bash
